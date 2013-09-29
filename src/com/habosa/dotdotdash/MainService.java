@@ -3,6 +3,8 @@ package com.habosa.dotdotdash;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.KeyboardView.OnKeyboardActionListener;
@@ -15,6 +17,7 @@ implements OnKeyboardActionListener {
 
     public static int KEY_CODE_MAIN = 1;
     public static long LONG_PRESS_TIME = 250L;
+    public static int CONVERT_DELAY_MILLIS = 700;
 
     private InputMethodManager mInputMethodManager;
 
@@ -25,6 +28,7 @@ implements OnKeyboardActionListener {
     private StringBuilder mComposing = new StringBuilder();
 
     public static Map<String, String> decoder = new HashMap<String, String>();
+    private static Timer sTimer = new Timer();
 
     @Override
     public void onCreate() {
@@ -92,7 +96,10 @@ implements OnKeyboardActionListener {
 
     @Override
     public void onPress(int primaryCode) {
-        mPressStarted = new Date();     
+        // Mark time
+        mPressStarted = new Date();
+        // Cancel scheduled tasks
+        sTimer.cancel();
     }
 
     @Override
@@ -110,17 +117,34 @@ implements OnKeyboardActionListener {
                 sendText(".");
             }
         } else if (primaryCode == 2) {
-            String entered = mComposing.toString();
-            String letter = decoder.get(entered);
-            if (letter != null) {
-                // Delete the dots and dashes
-                deleteText(mComposing.length());
-                // Send a letter
-                sendText(letter);
-                mComposing.setLength(0);
-            }
-        } else if (primaryCode == 3) {
             sendText(" ");
+            mComposing.setLength(0);
+        }
+        
+        // Convert after a small delay
+        sTimer = new Timer();
+        sTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                convertLastChar();
+            }      
+        }, CONVERT_DELAY_MILLIS);
+    }
+
+    /**
+     * Take the morse chars, make a letter.
+     */
+    public void convertLastChar() {
+        String entered = mComposing.toString();
+        String letter = decoder.get(entered);
+        if (letter != null) {
+            // Delete the dots and dashes
+            deleteText(mComposing.length());
+            // Send a letter
+            sendText(letter);
+            mComposing.setLength(0);
+        } else {
+            sendText("?");
             mComposing.setLength(0);
         }
     }
@@ -132,7 +156,7 @@ implements OnKeyboardActionListener {
         InputConnection inputConnection = getCurrentInputConnection();
         inputConnection.commitText(toSend, 1);
     }
-    
+
     /**
      * Delete the last 'num' characters
      * @param num

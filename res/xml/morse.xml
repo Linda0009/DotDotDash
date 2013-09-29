@@ -6,15 +6,11 @@
         <Key
             android:codes="1"
             android:keyLabel="TAP"
-            android:keyWidth="70%p" />
+            android:keyWidth="80%p" />
         <Key
             android:codes="2"
-            android:keyLabel="NEXT"
-            android:keyWidth="15%p" />
-        <Key
-            android:codes="3"
             android:keyLabel="SP"
-            android:keyWidth="15%p" />
+            android:keyWidth="20%p" />
     </Row>
 
 </Keyboard>
