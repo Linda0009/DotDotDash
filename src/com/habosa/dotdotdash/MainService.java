@@ -116,19 +116,19 @@ implements OnKeyboardActionListener {
                 mComposing.append('.');
                 sendText(".");
             }
+
+            // Convert after a small delay
+            sTimer = new Timer();
+            sTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    convertLastChar();
+                }      
+            }, CONVERT_DELAY_MILLIS);
         } else if (primaryCode == 2) {
             sendText(" ");
             mComposing.setLength(0);
         }
-        
-        // Convert after a small delay
-        sTimer = new Timer();
-        sTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                convertLastChar();
-            }      
-        }, CONVERT_DELAY_MILLIS);
     }
 
     /**
